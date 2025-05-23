@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GorillaFrame – Drone & Video</title>
+  <link rel="icon" type="image/x-icon" href="images/GFV_white_bg copy.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <style>
+    .pakket-optie {
+      display: block;
+      background: white;
+      border: 2px solid #ccc;
+      padding: 16px 24px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .pakket-optie:hover,
+    .pakket-optie.selected {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      color: black;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+    :root {
+      --primary: #fbbc05;
+      --primary-dark: #e0a800;
+      --background: #f4f4f4;
+      --text: #111;
+      --header-bg: #000;
+      --footer-bg: #111;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+    h1, h2, nav .logo-text {
+      font-family: 'Anton', sans-serif;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--header-bg);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    nav .logo-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    nav .logo-text img {
+      width: 30px;
+      height: auto;
+      border-radius: 4px;
+    }
+    nav .menu {
+      display: none;
+    }
+    nav .menu a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      transition: opacity 0.2s ease;
+    }
+    nav .menu a:hover {
+      opacity: 0.7;
+    }
+    .hamburger {
+      display: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+    @media (min-width: 768px) {
+      .menu {
+        display: flex !important;
+      }
+    }
+    @media (max-width: 768px) {
+      .hamburger {
+        display: block;
+      }
+      .menu {
+        display: none;
+        flex-direction: column;
+        background-color: var(--header-bg);
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .menu.open {
+        display: flex !important;
+      }
+      .menu a {
+        margin: 10px 0;
+      }
+    }
+    header {
+      background: none;
+      color: white;
+      /* Remove old text-align/padding, replaced below */
+      /* text-align: center;
+      padding: 100px 20px 80px; */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      text-align: left;
+      padding: 80px 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .header-video {
+      flex: 1 1 50%;
+      max-width: 600px;
+    }
+    .header-content {
+      flex: 1 1 40%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 30px;
+      color: black;
+    }
+    .header-content .cta-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    @media (min-width: 768px) {
+      .header-content .cta-buttons {
+        flex-direction: row;
+      }
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        padding: 60px 20px;
+        text-align: center;
+      }
+      .header-content {
+        flex-direction: column-reverse;
+      }
+      .header-content, .header-video {
+        max-width: 100%;
+      }
+    }
+    header img.logo {
+      max-width: 200px;
+      display: block;
+      margin: 0 auto 20px;
+      border-radius: 10px;
+    }
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    header p {
+      font-size: 1.4rem;
+      margin-top: 10px;
+      opacity: 0.9;
+    }
+    .cta-buttons {
+      margin-top: 30px;
+    }
+    .cta-buttons a {
+      display: inline-block;
+      margin: 10px;
+      padding: 14px 28px;
+      background: var(--primary);
+      color: black;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(251, 188, 5, 0.5);
+      transition: all 0.3s ease;
+    }
+    .cta-buttons a:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(251, 188, 5, 0.8);
+    }
+    section {
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .video-preview {
+      width: 100%;
+      max-width: 960px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    form button {
+      background: var(--header-bg);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    form button:hover {
+      background: #333;
+    }
+    .success-message {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-top: 40px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .package-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+    .package-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: white;
+      border: 2px solid #000;
+      border-radius: 12px;
+      padding: 30px 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease-in-out;
+    }
+    .package-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+    .package-card h3 {
+      font-family: 'Anton', sans-serif;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    .package-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .package-card ul li::before {
+      content: "✔ ";
+      color: green;
+      font-weight: bold;
+    }
+    .package-card ul li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    footer {
+      background: var(--footer-bg);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--primary-dark);
+    }
+    .popular-badge {
+      background: var(--primary);
+      color: black;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Removed custom nth-child(2) styling for uniform hover effect */
+
+    .package-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .package-card a.select-button {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: black;
+      font-weight: bold;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      align-self: flex-start;
+    }
+
+    .package-card a.select-button:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    .intro-block {
+      background: linear-gradient(to top, var(--background) 0%, var(--header-bg) 5%, var(--header-bg) 95%, var(--background) 100%);
+      color: white;
+      padding: 60px 20px 40px;
+    }
+
+    .intro-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .intro-text {
+      max-width: 700px;
+      text-align: left;
+    }
+
+    .intro-text h2 {
+      margin-bottom: 1.2rem;
+      font-size: 2.2rem;
+      letter-spacing: 0.5px;
+    }
+
+    .intro-text p {
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #f0f0f0;
+    }
+
+    .intro-text ul {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px 20px;
+      justify-content: center;
+      text-align: left;
+      padding-left: 0;
+    }
+    .intro-text ul li {
+      color: white;
+      font-size: 1rem;
+      line-height: 1.6;
+      padding-left: 24px;
+      position: relative;
+    }
+    .intro-text ul li::before {
+      content: '✔';
+      color: var(--primary);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    .intro-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .intro-text {
+      flex: 1 1 60%;
+    }
+
+    .intro-cta {
+      flex: 1 1 30%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .intro-cta .select-button {
+      padding: 14px 24px;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .select-button {
+      display: inline-block;
+      background: var(--primary);
+      color: black;
+      padding: 12px 24px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(251, 188, 5, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .select-button:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(251, 188, 5, 0.7);
+    }
+
+    /* Remove .intro-block::after if present, and add header::after and header positioning */
+    header {
+      position: relative;
+      z-index: 1;
+    }
+  @media (max-width: 767px) {
+    .intro-cta {
+      display: none;
+    }
+  }
+  .project-type-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-weight: bold;
+    background: var(--primary);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .project-type-buttons button:hover,
+  .project-type-buttons button.selected {
+    background: var(--primary-dark);
+    color: black;
+    transform: scale(1.05);
+  }
+
+  .booking-options {
+    max-width: 500px;
+    margin: 0 auto 30px;
+    text-align: left;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .button-group {
+    margin-bottom: 20px;
+  }
+
+  fieldset {
+    border: none;
+    margin: 20px 0;
+  }
+
+  legend {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .radio-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.radio-options label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.radio-options input[type="radio"] {
+  transform: scale(1.2);
+  margin-left: 10px;
+}
+@media (max-width: 1200px) {
+  header::after,
+  .intro-block::after {
+    display: none !important;
+  }
+}
+form,
+form input,
+form textarea,
+form button {
+  width: 100%;
+  box-sizing: border-box;
+}
+    /* Add intro-block pseudo-element for background image */
+    .intro-block {
+      position: relative;
+    }
+    .intro-block::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 600px;
+      height: 100%;
+      background: url('images/image.png') no-repeat center top;
+      background-size: contain;
+      opacity: 0.25;
+      filter: contrast(130%) brightness(1.5);
+      pointer-events: none;
+      transform: rotate(12deg);
+      z-index: 0;
+    }
+    .header-video h2 {
+      color: black;
+    }
+
+    .pakketten-intro {
+    .primary-cta {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: black;
+      box-shadow: 0 0 12px rgba(251, 188, 5, 0.6);
+      font-weight: bold;
+      padding: 14px 30px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .primary-cta:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(251, 188, 5, 0.9);
+    }
+
+    .header-video iframe {
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+      max-width: 800px;
+      margin: 10px auto 40px;
+      font-style: italic;
+      color: #555;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .mobile-sticky-cta {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-sticky-cta {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--primary);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        text-align: center;
+        padding: 10px;
+        z-index: 1001;
+      }
+
+      .mobile-sticky-cta a {
+        display: inline-block;
+        color: black;
+        font-weight: bold;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      }
+
+      .mobile-sticky-cta a:hover {
+        background: var(--primary-dark);
+        color: white;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo-text">
+      <img src="images/GFV_white_bg copy.png" alt="Logo GorillaFrame" />
+      GorillaFrame
+    </div>
+    <div class="hamburger" onclick="document.querySelector('.menu').classList.toggle('open')">
+      ☰
+    </div>
+    <div class="menu">
+      <a href="#pakketten">Onze pakketten</a>
+      <a href="#video">Video</a>
+      <a href="#booking">Offerte aanvragen</a>
+    </div>
+  </nav>
+
+  <header>
+    <div class="header-video">
+      <h2 style="text-align:center; margin-bottom: 10px;">📽️ Ons recente werk</h2>
+      <iframe 
+        width="100%" 
+        height="480" 
+        src="https://www.youtube.com/embed/gP2a_8cwEXw?autoplay=1&mute=1&rel=0&modestbranding=1&showinfo=0&controls=1" 
+        title="Dronevideo Belleheide GorillaFrame"
+        frameborder="0"
+        allow="autoplay; encrypted-media" 
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="header-content">
+      <img class="logo" src="images/GFV_transparant_bg copy.png" alt="GorillaFrame Logo" />
+      <div class="cta-buttons">
+        <a href="#booking" class="primary-cta">📅 Boek een shoot</a>
+        <a href="#pakketten">📦 Onze pakketten</a>
+      </div>
+    </div>
+  </header>
+
+  <!--
+  <section id="video">
+    <h2>Onze beelden</h2>
+    <div class="video-preview" data-aos="zoom-in" style="max-width:960px; margin:0 auto;">
+      <iframe 
+        src="https://drive.google.com/file/d/1XOltoc5fPrb6opzorMIvQT4tLHLFw25B/preview" 
+        width="100%" height="480" 
+        allow="autoplay" allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+  -->
+
+  <section class="intro-block">
+    <div class="intro-container">
+      <div class="intro-text" data-aos="fade-right">
+        <h2>Wat we doen bij GorillaFrame</h2>
+        <p>
+          Wij maken krachtige drone- en videocontent voor bedrijven, evenementen en creatieve projecten. <br /><br />
+          Van korte social media clips tot uitgebreide bedrijfsfilms: wij brengen jouw verhaal in beeld met een unieke cinematografische stijl.
+        </p>
+        <ul>
+          <li>Cinematische videoproductie</li>
+          <li>Snelle levering en revisies</li>
+          <li>Dronebeelden met impact</li>
+          <li>Maatwerk voor elk type klant</li>
+        </ul>
+      </div>
+      <div class="intro-cta" data-aos="fade-left">
+        <a href="#booking" class="select-button yellow">Vraag je offerte aan</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="pakketten">
+    <h2>📦 Pakketten</h2>
+    <p class="pakketten-intro">
+      Elk pakket is flexibel aan te passen aan jouw wensen. Heb je een langere video of extra services nodig? Vraag gerust een vrijblijvende maatwerkofferte aan!
+    </p>
+    <div class="package-grid">
+      <div class="package-card" data-aos="fade-up">
+        <h3>Basispakket</h3>
+        <ul>
+          <li>1 revisie inbegrepen</li>
+          <li>Video in horizontaal formaat</li>
+          <li>Geen extra foto's inbegrepen</li>
+          <li><em>Ideaal voor social media</em></li>
+        </ul>
+        <p style="font-size:0.95rem; color:#222; margin-top:12px;" title="Klik op 'Boek een shoot' om een vrijblijvende offerte te ontvangen">
+          💬 <strong>Prijs op aanvraag</strong> – afhankelijk van video en wensen
+        </p>
+        <a class="select-button kies-pakket" data-pakket="Basispakket" href="#booking">Start hier</a>
+      </div>
+      <div class="package-card" data-aos="fade-up">
+        <h3>Pro pakket</h3>
+        <ul>
+          <li>Alles uit het Basispakket</li>
+          <li>Montage op maat</li>
+          <li>3 revisies inbegrepen</li>
+          <li>5 professionele foto's inbegrepen</li>
+          <li>Video in horizontaal of verticaal formaat (keuze vooraf)</li>
+        </ul>
+        <p style="font-size:0.95rem; color:#222; margin-top:12px;" title="Klik op 'Boek een shoot' om een vrijblijvende offerte te ontvangen">
+          💬 <strong>Prijs op aanvraag</strong> – afhankelijk van video en wensen
+        </p>
+        <a class="select-button kies-pakket" data-pakket="Pro pakket" href="#booking">Ideaal voor merken</a>
+      </div>
+      <div class="package-card" data-aos="fade-up">
+        <div class="popular-badge">💎 Beste waarde</div>
+        <h3>Premium pakket</h3>
+        <ul>
+          <li>Alles uit het Pro pakket</li>
+          <li>Video in horizontaal én verticaal formaat</li>
+          <li>Ruwe beelden + foto's op USB</li>
+          <li>Inclusief Reels/TikTok versie</li>
+          <li>Onbeperkt aantal revisies</li>
+          <li>Levering binnen 3 werkdagen</li>
+          <li>Geen GorillaFrame-branding in de video (intro vrij van logo)</li>
+        </ul>
+        <p style="font-size:0.95rem; color:#222; margin-top:12px;" title="Klik op 'Boek een shoot' om een vrijblijvende offerte te ontvangen">
+          💬 <strong>Prijs op aanvraag</strong> – afhankelijk van video en wensen
+        </p>
+        <a class="select-button kies-pakket" data-pakket="Premium pakket" href="#booking">Boost je bedrijf</a>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="booking">
+    <h2>Klaar om te boeken?</h2>
+    <h3>Vul je gegevens in</h3>
+    <form id="booking-form" action="https://formspree.io/f/meogdzqq" method="POST">
+      <div class="form-group">
+        <input type="text" name="naam" placeholder="Je naam" required />
+      </div>
+      <div class="form-group">
+        <input type="email" name="email" placeholder="Je e-mailadres" required />
+      </div>
+      <div class="form-group">
+        <textarea name="bericht" rows="5" placeholder="Wat wil je laten filmen? Beschrijf kort je idee, locatie, timing of wensen..." required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="datum">Datum:</label>
+        <input type="date" id="datum" name="datum" required />
+      </div>
+      <div class="form-group">
+        <label for="locatie">Locatie:</label>
+        <input type="text" id="locatie" name="locatie" placeholder="Typ hier de locatie..." />
+      </div>
+      <fieldset class="form-group">
+        <legend>Welk pakket overweeg je?</legend>
+        <div class="radio-options">
+          <div class="pakket-optie" data-value="Basispakket">Basispakket</div>
+          <div class="pakket-optie" data-value="Pro pakket">Pro pakket</div>
+          <div class="pakket-optie" data-value="Premium pakket">Premium pakket</div>
+        </div>
+        <input type="hidden" name="pakket" id="pakketInput" />
+      </fieldset>
+      <input type="hidden" name="_captcha" value="false" />
+      <button type="submit">Verstuur</button>
+    </form>
+  </section>
+
+  <footer style="background: linear-gradient(to top, var(--footer-bg) 92%, var(--background) 100%); color: white; padding: 60px 20px;">
+    <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 60px; align-items: flex-start; text-align: center;">
+      <div style="flex: 1; min-width: 200px; text-align: center;">
+        <img src="images/GFV_white_bg copy.png" alt="GorillaFrame Logo" style="height: 60px; margin-bottom: 10px;" />
+        <p style="margin: 0;">Cinematische drone- en videoproductie</p>
+        <p style="margin-top: 8px;">BE 1021.587.469</p>
+      </div>
+      <div style="flex: 1; min-width: 200px; text-align: center;">
+        <h4>Contact</h4>
+        <p style="margin: 0;">gorillaframevisuals@gmail.com</p>
+        <p style="margin: 0;">+32 456 64 37 17</p>
+      </div>
+      <div style="flex: 1; min-width: 200px; text-align: center;">
+        <h4>Social</h4>
+        <p style="margin: 0;">
+          <a href="https://www.instagram.com/gorillaframe.visuals" target="_blank" style="color: var(--primary); text-decoration: none;">
+            <img src="images/instagram.png" alt="Instagram" style="height: 20px; vertical-align: middle;" />
+            Volg ons op Instagram
+          </a>
+        </p>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 40px; font-size: 0.9rem;">
+      © 2025 GorillaFrame – Gemaakt door Austyn & Thomas
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    window.addEventListener('load', () => {
+      // Op mobiel/tablet (breedte ≤ 768px), verwijder data-aos attribuut behalve binnen pakketten
+      if (window.innerWidth <= 768) {
+        document.querySelectorAll('[data-aos]').forEach(el => {
+          if (!el.closest('.package-grid') && !el.closest('.package-card')) {
+            el.removeAttribute('data-aos');
+          }
+        });
+      }
+      // Initialiseer AOS
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+    });
+  </script>
+  <script>
+    const form = document.getElementById("booking-form");
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const data = new FormData(form);
+      const action = form.getAttribute("action");
+      const response = await fetch(action, {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        form.innerHTML = `<div class="success-message">✅ <strong>Bedankt!</strong> We nemen zo snel mogelijk contact op.</div>`;
+      } else {
+        form.innerHTML = `<div class="success-message">❌ Er ging iets mis. Probeer opnieuw of stuur ons rechtstreeks een mail.</div>`;
+      }
+    });
+  </script>
+  <script>
+    document.querySelectorAll('.pakket-optie').forEach(option => {
+      option.addEventListener('click', function () {
+        document.querySelectorAll('.pakket-optie').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('pakketInput').value = this.dataset.value;
+      });
+    });
+
+    document.querySelectorAll('.kies-pakket').forEach(button => {
+      button.addEventListener('click', function () {
+        const pakket = this.dataset.pakket;
+        document.getElementById('pakketInput').value = pakket;
+
+        document.querySelectorAll('.pakket-optie').forEach(opt => {
+          opt.classList.remove('selected');
+          if (opt.dataset.value === pakket) {
+            opt.classList.add('selected');
+          }
+        });
+      });
+    });
+  </script>
+  <script>
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      document.documentElement.style.setProperty('--scroll-offset', scrollY * 0.05 + 'px');
+    });
+  </script>
+</div>
+  <div class="mobile-sticky-cta">
+    <a href="#booking" class="primary-cta">📅 Boek nu je shoot</a>
+  </div>
+</body>
+</html>
